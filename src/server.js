@@ -28,6 +28,10 @@ wss.on('connection', (socket) => {
     console.log('Disconnected from Browser');
   });
 
+  socket.on('message', (message) => {
+    console.log(message);
+  });
+
   socket.send('hello');
 });
 
