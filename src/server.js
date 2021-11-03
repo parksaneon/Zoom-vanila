@@ -20,16 +20,18 @@ const server = http.createServer(app);
 // websocket server
 const wss = new WebSocket.Server({ server });
 
+const sockets = [];
+
 // 콜백함수의 socket 매개변수는 연결된 브라우저를 뜻한다.
 wss.on('connection', (socket) => {
+  sockets.push(socket);
   console.log('connected to Browser');
 
   socket.on('close', () => {
     console.log('Disconnected from Browser');
   });
-
   socket.on('message', (message) => {
-    console.log(message);
+    sockets.forEach((aSocket) => aSocket.send(message));
   });
 
   socket.send('hello');
