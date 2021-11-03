@@ -25,13 +25,23 @@ const sockets = [];
 // 콜백함수의 socket 매개변수는 연결된 브라우저를 뜻한다.
 wss.on('connection', (socket) => {
   sockets.push(socket);
+  socket['nickname'] = 'Anon';
+
   console.log('connected to Browser');
 
   socket.on('close', () => {
     console.log('Disconnected from Browser');
   });
-  socket.on('message', (message) => {
-    sockets.forEach((aSocket) => aSocket.send(message));
+
+  socket.on('message', (msg) => {
+    const [type, payload] = JSON.parse(msg);
+
+    switch (type) {
+      case 'new_message':
+        sockets.forEach((aSocket) => aSocket.send(`${socket.nickname} : ${payload}`));
+      case 'nickname':
+        socket['nickname'] = payload;
+    }
   });
 
   socket.send('hello');
