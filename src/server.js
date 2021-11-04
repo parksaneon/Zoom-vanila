@@ -17,7 +17,9 @@ app.get('/*', (req, res) => res.redirect('/'));
 const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
-wsServer.on('connection', (socket) => {});
+wsServer.on('connection', (socket) => {
+  socket.on('enter_room', (msg, done) => {});
+});
 
 // websocket server
 // const wss = new WebSocket.Server({ server });
