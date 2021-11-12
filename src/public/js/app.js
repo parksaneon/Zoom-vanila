@@ -82,6 +82,13 @@ function handleCameraClick() {
 
 async function handleCameraChange() {
   await getMedia(camerasSelect.value);
+
+  if (myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection.getSenders().find((sender) => sender.track.kind === 'video');
+
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 async function initCall() {
@@ -99,6 +106,23 @@ function handleWelcomeSubmit(e) {
   socket.emit('join_room', input.value);
   roomName = input.value;
   input.value = '';
+}
+
+function handleIce(data) {
+  socket.emit('ice', data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  const peerFace = document.getElementById('peerFace');
+  peerFace.srcObject = data.stream;
+}
+
+function makeConnection() {
+  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener('icecandidate', handleIce);
+  myPeerConnection.addEventListener('addstream', handleAddStream);
+
+  myStream.getTracks().forEach((track) => myPeerConnection.addTrack(track, myStream));
 }
 
 muteBtn.addEventListener('click', handleMuteClick);
@@ -126,7 +150,6 @@ socket.on('answer', (answer) => {
   myPeerConnection.setRemoteDescription(answer);
 });
 
-function makeConnection() {
-  myPeerConnection = new RTCPeerConnection();
-  myStream.getTracks().forEach((track) => myPeerConnection.addTrack(track, myStream));
-}
+socket.on('ice', (ice) => {
+  myPeerConnection.addIceCandidate(ice);
+});
